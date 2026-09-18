@@ -1,0 +1,10 @@
+id: blog_md
+platform: blog
+kind: longform
+outputSchema: string
+limits:
+  minChars: 800
+rules:
+  - Output valid Markdown with YAML frontmatter (title, description, date).
+  - Preserve every fact listed as immutable in the brief, exactly.
+  - Use headings to break up sections; no single paragraph over ~150 words.

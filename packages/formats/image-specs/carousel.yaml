@@ -1,0 +1,12 @@
+id: carousel
+platform: general
+kind: visual
+size: "1080x1350"
+textOverlay: true
+slides:
+  min: 3
+  max: 9 # cover + up to 7 keyPoints (brief.md's max) + closing, one point per slide
+bundlePdf: true # also assemble slides into carousel.pdf for LinkedIn document posts
+rules:
+  - One key point per slide, in the same order as the brief's keyPoints.
+  - Consistent background style (palette, mood, composition) across every slide in the set.

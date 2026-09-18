@@ -1,0 +1,14 @@
+{
+  "name": "@cope/render",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "sharp": "^0.35.4"
+  },
+  "license": "MIT"
+}

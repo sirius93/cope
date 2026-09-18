@@ -1,0 +1,10 @@
+id: x_post
+platform: x
+kind: shortform
+outputSchema: string
+limits:
+  maxChars: 280
+rules:
+  - Stand-alone post, no "a thread" framing.
+  - At most one hashtag, only if it adds real discovery value.
+  - Lead with a concrete claim or number, not a vague teaser.

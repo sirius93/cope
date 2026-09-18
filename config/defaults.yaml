@@ -1,0 +1,57 @@
+# COPE default config. Copy/override with a `cope.config.yaml` in your project dir.
+# Model IDs rotate — verify against provider docs at build time.
+
+providers:
+  claude_cli:
+    kind: text
+    protocol: claude-code-cli # shells out to the local `claude` CLI in print mode —
+    # no API key needed, billed against whatever the CLI is already authenticated with
+    # (Pro/Max subscription or its own key). Requires `claude` on PATH.
+    # model: claude-sonnet-5   # optional override; omit to use the CLI's own default
+  codex_cli:
+    kind: text+image
+    protocol: codex-cli # shells out to the local `codex` CLI (`codex exec`) — no API
+    # key needed, billed against whatever the CLI is already authenticated with (ChatGPT
+    # subscription or its own key). Requires `codex` on PATH. Also does real image
+    # generation via codex's built-in image_gen tool (confirmed working, real PNG pixels).
+    # model: gpt-5.6-sol       # optional override; omit to use the CLI's own default
+  anthropic:
+    kind: text
+    protocol: anthropic # uses the Anthropic Messages API wire format directly
+    baseUrl: https://api.anthropic.com
+    apiKeyEnv: ANTHROPIC_API_KEY
+    model: claude-sonnet-5 # verify current Claude model id at build time
+  openai:
+    kind: text+image
+    protocol: openai-compatible # chat/completions wire format; also matches gateways
+    baseUrl: https://api.openai.com/v1
+    apiKeyEnv: OPENAI_API_KEY
+    textModel: gpt-5 # verify current Codex/OpenAI model id at build time
+    imageModel: gpt-image-1 # verify current OpenAI image model id at build time
+
+routing:
+  # Default: run every text stage through a local CLI agent, no API key required.
+  # Swap any of these to "anthropic" / "openai" for direct pay-as-you-go API billing.
+  brief: claude_cli
+  longform: claude_cli
+  midform: claude_cli
+  shortform: claude_cli
+  edit: claude_cli
+  image_prompt: claude_cli # one text call for carousel copy/art direction
+  # These routes are used only in generated mode. Cards derive alt text from their copy.
+  alt_text: codex_cli # codex exec supports -i/--image for vision input
+  image_generate: codex_cli # real image_gen tool, no key needed — set to "openai" for
+  # predictable per-image API billing instead
+
+limits:
+  maxRepairPasses: 2
+  # Enforced across all image formats. Image generation is not automatically retried.
+  maxImagesPerRun: 20
+
+# Local information cards avoid all image-generation and vision calls.
+images:
+  mode: cards # use generated for AI artwork (slower)
+  style: editorial # editorial | minimal | blueprint | sketch; applies to either mode
+
+voice:
+  file: voice.md # optional global brand-voice file

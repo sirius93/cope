@@ -1,0 +1,13 @@
+id: x_thread
+platform: x
+kind: shortform
+outputSchema: string[]
+limits:
+  maxPostChars: 280
+  minPosts: 3
+  maxPosts: 12
+rules:
+  - First post must stand alone and hook without "a thread 🧵" clichés.
+  - No hashtags except at most one, and only in the last post.
+  - Number posts only if there are more than 5.
+  - Last post ends with a CTA and links back to the long-form source if one exists.

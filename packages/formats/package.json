@@ -1,0 +1,13 @@
+{
+  "name": "@cope/formats",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "yaml": "^2.5.0"
+  },
+  "license": "MIT"
+}

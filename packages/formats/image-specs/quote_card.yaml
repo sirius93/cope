@@ -1,0 +1,8 @@
+id: quote_card
+platform: general
+kind: visual
+size: "1080x1080"
+textOverlay: true
+rules:
+  - Background must be simple and uncluttered — busy backgrounds fight with the overlaid quote text.
+  - Pull the featured line from the brief's quotableLines where one fits well.

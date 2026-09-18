@@ -1,0 +1,8 @@
+id: og_image
+platform: general
+kind: visual
+size: "1200x630"
+textOverlay: false
+rules:
+  - Clean, on-brand hero image representing the core claim.
+  - No embedded text — the image model must not render any letters or words.

@@ -1,0 +1,15 @@
+{
+  "name": "@cope/cli",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "bin": {
+    "cope": "./src/index.ts"
+  },
+  "dependencies": {
+    "@cope/core": "workspace:*",
+    "@cope/formats": "workspace:*",
+    "@cope/providers": "workspace:*"
+  },
+  "license": "MIT"
+}

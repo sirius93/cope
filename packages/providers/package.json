@@ -1,0 +1,13 @@
+{
+  "name": "@cope/providers",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0"
+  },
+  "license": "MIT"
+}
