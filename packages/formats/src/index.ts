@@ -50,6 +50,10 @@ export function loadBriefPromptTemplate(): string {
   return readFileSync(join(promptsDir, "brief.md"), "utf-8");
 }
 
+export function loadVoicePromptTemplate(): string {
+  return readFileSync(join(promptsDir, "voice.md"), "utf-8");
+}
+
 export function renderTemplate(template: string, vars: Record<string, string>): string {
   return Object.entries(vars).reduce(
     (text, [key, value]) => text.replaceAll(`{{${key}}}`, value),

@@ -165,6 +165,21 @@ Direct, a little dry. Short sentences. No "unlock", "leverage", "game-changing",
 exclamation points. Prefer concrete numbers over vague claims.
 ```
 
+Don't want to write `voice.md` by hand? `pnpm cope voice <source>...` distills one from
+writing samples instead — pass article URLs, RSS/Atom feed URLs (it fetches the feed and
+reads the embedded post content, no need to list every post link), or local text files.
+It refuses to clobber an existing `voice.md` unless you pass `--force`, and re-running it
+against an existing file asks the model to refine rather than contradict it:
+
+```
+pnpm cope voice https://yourblog.com/feed.xml https://yourblog.com/some-post
+```
+
+`voice.md` is gitignored by default — it's distilled from your own writing, so it's
+treated as personal, not project, content. Same goes for anything you feed it as a local
+writing sample (e.g. `examples/voice-note.txt`): keep personal source material gitignored
+too, and commit only genericized/example versions if you want one tracked.
+
 Run `pnpm cope init` to write a starter `cope.config.yaml` + `.env.example`, or write a
 partial config yourself — sections/providers merge with `config/defaults.yaml`, so a
 small override is enough:

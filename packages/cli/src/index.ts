@@ -4,6 +4,7 @@ import { parseArgs } from "node:util";
 import { runBriefCommand } from "./commands/brief.js";
 import { runInit } from "./commands/init.js";
 import { runRunCommand } from "./commands/run.js";
+import { runVoiceCommand } from "./commands/voice.js";
 
 const HELP = [
   "cope — Create Once, Post Everywhere",
@@ -14,6 +15,7 @@ const HELP = [
   "  cope brief <input>           just the canonical brief",
   "  cope run <input> -f a,b,c    adapt to the given format ids",
   "  cope run <input> --all       adapt to every known format",
+  "  cope voice <src>... [--force]  learn voice.md from URLs, RSS feed URLs, or files",
   "  --image-mode cards|generated  local info cards (default) or AI artwork",
   "  --image-style <name>          editorial (default), minimal, blueprint, sketch",
 ].join("\n");
@@ -54,6 +56,15 @@ async function main() {
         imageMode: values["image-mode"],
         imageStyle: values["image-style"],
       });
+      return;
+    }
+    case "voice": {
+      const { positionals, values } = parseArgs({
+        args: rest,
+        allowPositionals: true,
+        options: { force: { type: "boolean" } },
+      });
+      await runVoiceCommand(positionals, { force: values.force });
       return;
     }
     default: {

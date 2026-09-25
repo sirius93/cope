@@ -14,14 +14,14 @@ export async function ingest(source: string): Promise<IngestResult> {
   return { text: readFileSync(source, "utf-8"), sourceType: "file" };
 }
 
-async function fetchUrl(url: string): Promise<string> {
+export async function fetchUrl(url: string): Promise<string> {
   return (await fetchBytes(url, {}, 2 * 1024 * 1024, 30_000)).toString("utf-8");
 }
 
 // ponytail: regex tag-stripping instead of a full Readability extraction — good enough
 // for simple article pages. Swap in @mozilla/readability + jsdom if extraction quality
 // on complex pages (nav/ads bleeding into the text) turns out to matter.
-function stripHtml(html: string): string {
+export function stripHtml(html: string): string {
   const text = html
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")

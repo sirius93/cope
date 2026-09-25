@@ -33,6 +33,7 @@ routing:
   # Default: run every text stage through a local CLI agent, no API key required.
   # Swap any of these to "anthropic" / "openai" for direct pay-as-you-go API billing.
   brief: claude_cli
+  voice_learn: claude_cli # `cope voice` — distills a voice.md from writing samples/RSS feeds
   longform: claude_cli
   midform: claude_cli
   shortform: claude_cli

@@ -136,6 +136,7 @@ To use Codex for the entire pipeline, create `cope.config.yaml`:
 ```yaml
 routing:
   brief: codex_cli
+  voice_learn: codex_cli
   longform: codex_cli
   midform: codex_cli
   shortform: codex_cli
@@ -153,6 +154,7 @@ route stages to `anthropic` or `openai` in `cope.config.yaml`. For an OpenAI-onl
 ```yaml
 routing:
   brief: openai
+  voice_learn: openai
   longform: openai
   midform: openai
   shortform: openai
@@ -239,7 +241,7 @@ images:
 limits:
   maxImagesPerRun: 10
 voice:
-  file: voice.md
+  file: voice.md # gitignored by default — it's derived from your own writing, not project code
 ```
 
 | Provider | Authentication | Use |

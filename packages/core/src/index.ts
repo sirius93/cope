@@ -6,4 +6,5 @@ export * from "./pipeline.js";
 export * from "./image-pipeline.js";
 export * from "./run.js";
 export * from "./slug.js";
+export * from "./voice.js";
 export { IMAGE_STYLES, parseImageStyle, type ImageStyle } from "@cope/render";
