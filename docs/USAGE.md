@@ -117,6 +117,26 @@ so artwork and card design stay visually consistent. Changing style adds no call
 overrides it for one run. An unknown style name fails immediately, before any generation
 starts.
 
+## Brand your images
+
+Copy `persona/persona.yaml.example` to `persona/persona.yaml` and fill in whichever
+fields you have — logo, primary/secondary color, website, X/Twitter handle. Every field
+is optional, and the whole file is optional: skip it and images render exactly as before.
+
+```yaml
+logo: logo.png # relative to persona/
+primaryColor: "#2f6f4f"
+secondaryColor: "#555750"
+website: yourdomain.com
+twitter: yourhandle
+```
+
+When set, `primaryColor`/`secondaryColor` replace the chosen style's accent/muted colors
+(rules, decoration, footer text), and a brand bar — logo, website, handle — is drawn in
+the card's bottom margin. This applies to every image format (`carousel`, `quote_card`,
+`og_image`), in both `cards` and `generated` mode. `persona/` is gitignored except the
+`.example` file, same as `voice.md`: your logo and handle are personal, not project code.
+
 ## Run it, then review the output
 
 Every invocation creates a fresh `out/<slug>-<unique-id>/` directory — reruns never

@@ -1,7 +1,8 @@
 import sharp from "sharp";
-import { escapeXml } from "./svg-overlay.js";
-import { wrapText } from "./wrap-text.js";
 import { IMAGE_STYLES, parseImageStyle, type ImageStyle } from "./image-styles.js";
+import { applyPersonaColors, buildBrandBar, hasPersonaBranding, type Persona } from "./persona.js";
+import { wrapText } from "./wrap-text.js";
+import { escapeXml } from "./xml.js";
 
 export interface InfoCard {
   headline: string;
@@ -11,12 +12,17 @@ export interface InfoCard {
   index: number;
   total: number;
   style?: ImageStyle;
+  persona?: Persona;
 }
 
 export function buildInfoCardSvg(card: InfoCard): string {
   const { width, height, index, total } = card;
   const name = parseImageStyle(card.style ?? "editorial");
-  const style = IMAGE_STYLES[name];
+  const style = applyPersonaColors(IMAGE_STYLES[name], card.persona);
+  const branded = hasPersonaBranding(card.persona);
+  const shortSide = Math.min(width, height);
+  const brandBarH = branded ? Math.round(shortSide * 0.09) : 0;
+  const brandGap = branded ? Math.round(shortSide * 0.02) : 0;
   const pad = Math.round(width * 0.085);
   const usable = width - pad * 2;
   const centered = name === "minimal";
@@ -37,7 +43,8 @@ export function buildInfoCardSvg(card: InfoCard): string {
   let title = lines(card.headline, titleSize);
   let body = lines(card.body, bodySize);
   const topEdge = pad + (height > width ? height * 0.12 : 22);
-  const available = height - pad * 1.3 - topEdge;
+  const bottomLimit = height - pad - (branded ? brandBarH + brandGap : 0);
+  const available = bottomLimit - pad * 0.3 - topEdge;
   const blockHeight = () => title.length * titleSize * 1.18 + (body.length ? body.length * bodySize * 1.5 + 42 : 0);
   while (blockHeight() > available) {
     titleSize -= 2;
@@ -46,7 +53,7 @@ export function buildInfoCardSvg(card: InfoCard): string {
     title = lines(card.headline, titleSize);
     body = lines(card.body, bodySize);
   }
-  const top = centered ? (height - blockHeight()) / 2 - 20 : topEdge;
+  const top = centered ? Math.min((height - blockHeight()) / 2 - 20, bottomLimit - blockHeight()) : topEdge;
   const titleY = top + titleSize;
   const bodyY = titleY + (title.length - 1) * titleSize * 1.18 + 42 + bodySize;
   const text = (rows: string[], y: number, size: number, gap: number) => rows.map((line, i) =>
@@ -57,6 +64,7 @@ export function buildInfoCardSvg(card: InfoCard): string {
   if (name === "minimal") decoration = `<path d="M${width / 2 - 20} ${height - pad}h40" stroke="${style.accent}" stroke-width="2"/>`;
   if (name === "blueprint") decoration = `<defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="${style.rule}" stroke-opacity="0.3"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/><path d="M${pad} ${pad + 12}V${pad}h48" fill="none" stroke="${style.accent}"/>`;
   if (name === "sketch") decoration = `<path d="M${pad} ${pad + 3}Q${width / 2} ${pad - 3} ${width - pad} ${pad + 1}" fill="none" stroke="${style.rule}" stroke-width="1.5"/><path d="M${pad} ${height - pad}q55 -4 110 0" fill="none" stroke="${style.accent}" stroke-width="2"/>`;
+  const brand = branded ? buildBrandBar(card.persona!, pad, bottomLimit, width - pad * 2, brandBarH, style) : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
   <rect width="100%" height="100%" fill="${style.background}"/>
   ${decoration}
@@ -65,6 +73,7 @@ export function buildInfoCardSvg(card: InfoCard): string {
     <text font-family="${style.bodyFont}" font-size="${bodySize}" fill="${style.muted}">${text(body, bodyY, bodySize, 1.5)}</text>
   </g>
   ${footer}
+  ${brand}
 </svg>`;
 }
 

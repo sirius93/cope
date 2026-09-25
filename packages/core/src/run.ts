@@ -3,7 +3,7 @@ import { basename, join } from "node:path";
 import { isImageFormat, listAllFormatIds, loadFormat, loadImageFormat } from "@cope/formats";
 import { createProviderRouter } from "@cope/providers";
 import { generateBrief } from "./brief.js";
-import { type CopeConfig, loadVoice } from "./config.js";
+import { type CopeConfig, loadPersona, loadVoice } from "./config.js";
 import { adaptImageFormat } from "./image-pipeline.js";
 import { ingest } from "./ingest.js";
 import { adaptFormat } from "./pipeline.js";
@@ -45,6 +45,7 @@ export async function runCope(
   };
   const { text: source } = await ingest(inputPath);
   const voice = loadVoice(config, cwd);
+  const persona = loadPersona(cwd);
 
   const brief = await generateBrief(
     source,
@@ -72,7 +73,7 @@ export async function runCope(
           cards ? undefined : router.imageProviderFor("image_generate"),
           cards ? undefined : router.imageProviderFor("alt_text"),
           imageOutDir,
-          { maxRepairPasses: config.limits.maxRepairPasses, mode: config.images.mode, style: config.images.style, reserveImages },
+          { maxRepairPasses: config.limits.maxRepairPasses, mode: config.images.mode, style: config.images.style, persona, reserveImages },
         );
         imageResults.push(result);
       } catch (err) {

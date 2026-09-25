@@ -1,0 +1,8 @@
+# Brand identity applied to every generated image (carousel, quote card, og image).
+# Copy this file to persona.yaml and fill in what you have — every field is optional.
+
+logo: logo.png # path relative to this persona/ folder
+primaryColor: "#2f6f4f" # rules/accents across the card
+secondaryColor: "#555750" # muted/footer text
+website: yourdomain.com
+twitter: yourhandle

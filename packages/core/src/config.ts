@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import { parseImageStyle, type ImageStyle } from "@cope/render";
+import { parseImageStyle, type ImageStyle, type Persona } from "@cope/render";
 import type { ProviderRouterConfig } from "@cope/providers";
 
 const srcDir = dirname(fileURLToPath(import.meta.url));
@@ -67,6 +67,28 @@ export function loadVoice(config: CopeConfig, cwd: string = process.cwd()): stri
   const path = join(cwd, config.voice.file);
   if (!existsSync(path)) return "";
   return `Brand voice:\n${readFileSync(path, "utf-8")}`;
+}
+
+// Brand identity for image formats: logo, colors, handle, website. Optional — a project
+// with no persona/persona.yaml just renders undecorated cards, same as today.
+export function loadPersona(cwd: string = process.cwd()): Persona | undefined {
+  const dir = join(cwd, "persona");
+  const path = join(dir, "persona.yaml");
+  if (!existsSync(path)) return undefined;
+  const raw = parse(readFileSync(path, "utf-8")) as Record<string, unknown>;
+  const persona: Persona = {};
+  for (const key of ["primaryColor", "secondaryColor", "website", "twitter"] as const) {
+    if (raw[key] === undefined) continue;
+    if (typeof raw[key] !== "string" || !raw[key].trim()) throw new Error(`persona.${key} must be a non-empty string`);
+    persona[key] = raw[key] as string;
+  }
+  if (raw.logo !== undefined) {
+    if (typeof raw.logo !== "string" || !raw.logo.trim()) throw new Error("persona.logo must be a non-empty string");
+    const logoFile = join(dir, raw.logo);
+    if (!existsSync(logoFile)) throw new Error(`persona.logo file not found: ${logoFile}`);
+    persona.logoFile = logoFile;
+  }
+  return persona;
 }
 
 // ponytail: hand-rolled instead of the `dotenv` package — it's a dozen lines and this is

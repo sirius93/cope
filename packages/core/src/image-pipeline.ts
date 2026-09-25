@@ -2,7 +2,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderTemplate, type ImageFormatDefinition } from "@cope/formats";
 import type { ImageProvider, TextMessage, TextProvider } from "@cope/providers";
-import { buildPdfFromImages, renderTextOverlay, renderInfoCard, normalizeImage, IMAGE_STYLES, parseImageStyle, type ImageStyle } from "@cope/render";
+import { buildPdfFromImages, renderTextOverlay, renderInfoCard, normalizeImage, IMAGE_STYLES, parseImageStyle, type ImageStyle, type Persona } from "@cope/render";
 import { extractJsonBlock } from "./json.js";
 import type { Brief, GeneratedImage, ImageAdaptResult, ImageConcept } from "./types.js";
 
@@ -122,7 +122,7 @@ export async function adaptImageFormat(
   imageProvider: ImageProvider | undefined, // image_generate stage
   altTextProvider: ImageProvider | undefined, // alt_text stage
   outDir: string,
-  opts: { maxRepairPasses?: number; mode?: "cards" | "generated"; style?: ImageStyle; reserveImages?: (count: number) => void } = {},
+  opts: { maxRepairPasses?: number; mode?: "cards" | "generated"; style?: ImageStyle; persona?: Persona; reserveImages?: (count: number) => void } = {},
 ): Promise<ImageAdaptResult> {
   const maxRepairPasses = opts.maxRepairPasses ?? 2;
   const cards = opts.mode === "cards";
@@ -145,13 +145,13 @@ export async function adaptImageFormat(
     const hasOverlay = !!(def.textOverlay && (concept.headline || concept.subhead));
 
     if (cards) {
-      await renderInfoCard(outFile, { headline: concept.headline!, body: concept.subhead ?? "", width, height, index: i + 1, total: concepts.length, style });
+      await renderInfoCard(outFile, { headline: concept.headline!, body: concept.subhead ?? "", width, height, index: i + 1, total: concepts.length, style, persona: opts.persona });
     } else {
       const rawFile = join(outDir, `${def.id}${suffix}.raw.png`);
       try {
         await imageProvider!.generate({ prompt: buildImagePrompt(concept, style, hasOverlay), outFile: rawFile, size: def.size });
         if (hasOverlay) {
-          await renderTextOverlay(rawFile, outFile, { headline: concept.headline, subhead: concept.subhead, width, height, style });
+          await renderTextOverlay(rawFile, outFile, { headline: concept.headline, subhead: concept.subhead, width, height, style, persona: opts.persona });
         } else {
           await normalizeImage(rawFile, outFile, width, height);
         }
