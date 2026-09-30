@@ -55,4 +55,4 @@ images:
   style: editorial # editorial | minimal | blueprint | sketch; applies to either mode
 
 voice:
-  file: voice.md # optional global brand-voice file
+  file: persona/voice.md # optional global brand-voice file

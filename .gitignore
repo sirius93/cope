@@ -9,6 +9,5 @@ out/
 .claude/
 input/voice.txt
 input/doc.txt
-/voice.md
 /persona/*
 !/persona/persona.yaml.example

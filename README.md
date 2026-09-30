@@ -241,12 +241,12 @@ images:
 limits:
   maxImagesPerRun: 10
 voice:
-  file: voice.md # gitignored by default — it's derived from your own writing, not project code
+  file: persona/voice.md # gitignored by default — it's derived from your own writing, not project code
 ```
 
 Brand images with a logo, colors, website, and social handle by copying
 `persona/persona.yaml.example` to `persona/persona.yaml` — see [docs/USAGE.md](docs/USAGE.md)
-for the fields. It's optional and gitignored, same as `voice.md`.
+for the fields. It's optional and gitignored, same as `persona/voice.md`.
 
 | Provider | Authentication | Use |
 |---|---|---|

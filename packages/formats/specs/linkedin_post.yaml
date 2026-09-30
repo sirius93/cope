@@ -6,6 +6,7 @@ limits:
   maxChars: 3000
   minChars: 400
 rules:
+  - "Experiment: open on the outcome/result, not the mechanism — save the how for a linked thread or article."
   - Open with a hook line that stands alone before the "see more" fold (roughly the first 210 characters).
   - Short paragraphs with line breaks between them, no walls of text.
   - No more than 3 hashtags, placed at the end.

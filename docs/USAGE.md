@@ -77,7 +77,7 @@ clamping copy if it still can't get complete, legible text back after its repair
 differently: they hard-truncate long fields (e.g. `brief.audience`) to a fixed character
 budget, appending "…" — a real ellipsis, not a figure of speech — if a field runs long.
 Unlike the carousel, this can and does silently drop the end of a sentence. Check the
-image's own JSON if a card's subhead looks cut off; the fix today is a shorter `voice.md`/
+image's own JSON if a card's subhead looks cut off; the fix today is a shorter `persona/voice.md`/
 source, since there's no rewrite pass for these two formats to shrink the text instead.
 
 Alt-text is the card's own title and description, so a truncated subhead shows up
@@ -135,7 +135,7 @@ When set, `primaryColor`/`secondaryColor` replace the chosen style's accent/mute
 (rules, decoration, footer text), and a brand bar — logo, website, handle — is drawn in
 the card's bottom margin. This applies to every image format (`carousel`, `quote_card`,
 `og_image`), in both `cards` and `generated` mode. `persona/` is gitignored except the
-`.example` file, same as `voice.md`: your logo and handle are personal, not project code.
+`.example` file: your logo, handle, and brand voice are personal, not project code.
 
 ## Run it, then review the output
 
@@ -174,31 +174,31 @@ Re-run just the format that failed rather than the whole thing:
 
 ## Brand voice, providers, and limits
 
-Drop a `voice.md` file in the directory you run `pnpm cope` from — its tone guidance
-reaches the brief and every text-format prompt. Carousel copy is summarized from that
-brief, while image art direction is controlled separately by `--image-style`.
+Drop a `persona/voice.md` file in the directory you run `pnpm cope` from — its tone
+guidance reaches the brief and every text-format prompt. Carousel copy is summarized from
+that brief, while image art direction is controlled separately by `--image-style`.
 
 ```
-voice.md
----------
+persona/voice.md
+-----------------
 Direct, a little dry. Short sentences. No "unlock", "leverage", "game-changing", or
 exclamation points. Prefer concrete numbers over vague claims.
 ```
 
-Don't want to write `voice.md` by hand? `pnpm cope voice <source>...` distills one from
-writing samples instead — pass article URLs, RSS/Atom feed URLs (it fetches the feed and
-reads the embedded post content, no need to list every post link), or local text files.
-It refuses to clobber an existing `voice.md` unless you pass `--force`, and re-running it
-against an existing file asks the model to refine rather than contradict it:
+Don't want to write `persona/voice.md` by hand? `pnpm cope voice <source>...` distills one
+from writing samples instead — pass article URLs, RSS/Atom feed URLs (it fetches the feed
+and reads the embedded post content, no need to list every post link), or local text files.
+It refuses to clobber an existing `persona/voice.md` unless you pass `--force`, and
+re-running it against an existing file asks the model to refine rather than contradict it:
 
 ```
 pnpm cope voice https://yourblog.com/feed.xml https://yourblog.com/some-post
 ```
 
-`voice.md` is gitignored by default — it's distilled from your own writing, so it's
-treated as personal, not project, content. Same goes for anything you feed it as a local
-writing sample (e.g. `examples/voice-note.txt`): keep personal source material gitignored
-too, and commit only genericized/example versions if you want one tracked.
+`persona/voice.md` is gitignored by default — it's distilled from your own writing, so
+it's treated as personal, not project, content. Same goes for anything you feed it as a
+local writing sample (e.g. `examples/voice-note.txt`): keep personal source material
+gitignored too, and commit only genericized/example versions if you want one tracked.
 
 Run `pnpm cope init` to write a starter `cope.config.yaml` + `.env.example`, or write a
 partial config yourself — sections/providers merge with `config/defaults.yaml`, so a
@@ -309,8 +309,8 @@ is enabled.
 - **A generated image looks wrong or the run is slow.** Generated mode makes real,
   un-retried sequential calls — `--image-mode cards` is the fast, free path if you don't
   specifically need AI artwork.
-- **Output ignored my brand voice.** Confirm `voice.md` is in the directory you *ran*
-  `pnpm cope` from. It reaches the brief and text formats; carousel copy sees the
+- **Output ignored my brand voice.** Confirm `persona/voice.md` is in the directory you
+  *ran* `pnpm cope` from. It reaches the brief and text formats; carousel copy sees the
   resulting brief, while image art direction remains controlled by `--image-style`.
 
 Local tests (`pnpm test`) run without any paid service or account. Smoke-test with your

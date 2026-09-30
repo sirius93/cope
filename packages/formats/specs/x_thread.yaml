@@ -7,6 +7,7 @@ limits:
   minPosts: 3
   maxPosts: 12
 rules:
+  - "Experiment: open on the mechanism/how, not the outcome — that's what earns the reply-chain read."
   - First post must stand alone and hook without "a thread 🧵" clichés.
   - No hashtags except at most one, and only in the last post.
   - Number posts only if there are more than 5.
