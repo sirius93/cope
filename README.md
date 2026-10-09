@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/cop-e.png" alt="COP-e, COPE's corgi mascot, holding three content cards" width="260">
+</p>
+
 # COPE — Create Once, Post Everywhere
 
 **Turn one idea into a complete, platform-ready content package.**

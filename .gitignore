@@ -7,7 +7,7 @@ out/
 *.log
 .DS_Store
 .claude/
-input/voice.txt
-input/doc.txt
+/input/*
+!/input/*.example
 /persona/*
 !/persona/persona.yaml.example

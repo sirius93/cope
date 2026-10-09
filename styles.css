@@ -146,6 +146,12 @@ h1 em, h2 em { font-family: var(--serif); font-weight: 500; }
 .principle-icon { display: block; margin-bottom: 4.5rem; color: var(--green); font-family: var(--mono); font-size: .65rem; }
 .principle-card p { max-width: 440px; }
 
+.mascot { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(3rem, 8vw, 9rem); align-items: center; border-top: 1px solid var(--line); }
+.mascot-portrait { position: relative; overflow: hidden; min-height: 540px; border-radius: 46% 46% 42% 40%; background: var(--green); isolation: isolate; }
+.mascot-portrait img { position: absolute; z-index: 1; left: 10%; bottom: -3%; width: 80%; height: auto; filter: drop-shadow(0 24px 28px rgba(0,0,0,.2)); }
+.mascot-copy h2 { font-size: clamp(3.5rem, 6vw, 6.8rem); }
+.mascot-copy > p:last-child { max-width: 480px; margin: 2rem 0 0; color: var(--muted); font-size: 1rem; line-height: 1.75; }
+
 .get-started { padding-top: 2rem; }
 .start-card { display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(3rem, 7vw, 8rem); align-items: center; padding: clamp(2rem, 5vw, 5rem); color: var(--white); background: var(--ink); }
 .start-copy h2 { font-size: clamp(3rem, 5vw, 5.8rem); }
@@ -178,6 +184,7 @@ h1 em, h2 em { font-family: var(--serif); font-weight: 500; }
   .section-heading .eyebrow, .principles-top .eyebrow { margin-bottom: 2rem; }
   .formats { grid-template-columns: 1fr; }
   .formats-intro { position: static; }
+  .mascot { grid-template-columns: 1fr; }
   .start-card { grid-template-columns: 1fr; }
 }
 
@@ -209,6 +216,8 @@ h1 em, h2 em { font-family: var(--serif); font-weight: 500; }
   .format-row p { max-width: 260px; }
   .principle-card { min-height: 250px; }
   .principle-icon { margin-bottom: 3rem; }
+  .mascot-portrait { min-height: 430px; }
+  .mascot-portrait img { left: 6%; width: 88%; }
   .start-card { padding: 2rem 1.25rem; }
   .code-panel code { padding: 1.5rem 1rem 4rem; font-size: .58rem; }
   .site-footer { grid-template-columns: 1fr; }
