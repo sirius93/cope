@@ -73,6 +73,15 @@ numbers. It rejects titles or descriptions containing ellipses and descriptions 
 mid-sentence, and — for the carousel specifically — the format fails outright rather than
 clamping copy if it still can't get complete, legible text back after its repair passes.
 
+**Code on carousel slides.** When the source has fenced code blocks (```` ``` ```` or
+`~~~`, or `<pre>` on a URL source), the carousel can put an excerpt on the slide whose
+point it shows: at most 12 lines of at most 60 characters. Every line must match a line in
+the source's code blocks; only the indentation may change. An invented or edited line
+fails validation and gets a repair pass. Code is drawn in a monospace panel that keeps
+indentation and never wraps. Code slides are always rendered as local cards, even in
+`generated` mode, because generated artwork can't hold legible code. Their alt text
+includes the code.
+
 **`og_image`/`quote_card` render directly from the brief with no text call**, and behave
 differently: they hard-truncate long fields (e.g. `brief.audience`) to a fixed character
 budget, appending "…" — a real ellipsis, not a figure of speech — if a field runs long.
@@ -161,6 +170,68 @@ out/migrating-five-repos-into-one-pnpm-mon-a1b2c3/
 
 **Nothing is published automatically.** Review every file — text and images — before
 posting anywhere.
+
+**Review in the browser.** `pnpm cope review` opens COPE studio at
+http://localhost:4321 (`--port` to change). It shows every run in `out/`. Edit text in
+place with live character counts. Saving re-runs the same validator as `cope run` and
+moves the file between the run folder and `invalid/` to match. Slides, cards and the
+carousel PDF show with their alt text, and a Copy button puts each post on the clipboard.
+
+**Start a post from the browser.** Click **+ New post**, paste notes, a Markdown draft
+or a URL, and pick formats. Images happen in two reviewed steps:
+
+1. **Approve the drafts.** COPE writes the brief and text drafts and sets the image formats
+   aside. Review the drafts and adjust the brief's key points (the carousel gets one
+   slide per point). Then click **Approve drafts & write slides**. COPE writes each image
+   format's plan to `images/<format>.plan.json`: every slide's title, description,
+   optional code and, in generated mode, its artwork prompt.
+2. **Review the slides.** Each slide shows a live preview beside its fields, rendered
+   locally as you type, with no model calls. Generated-mode previews show the text panel
+   over a placeholder, because artwork is only made in the next step. Edit, add or remove
+   slides, then click **Generate images**. Unsaved edits are saved first. Each save
+   re-checks the same rules as model output: 5–6 word titles, complete descriptions up to
+   240 characters, 3–9 slides, and code copied from the source. Images are then rendered
+   exactly from the saved plan file.
+
+A format that fails to render stays editable with its error, so you can fix the plan and
+generate again. The brief is read-only once slides are written.
+
+The studio runs model calls for you, so it listens only on 127.0.0.1 and refuses
+requests from other hosts or origins. Jobs live in memory. If you stop the server
+mid-generation, the run folder is kept, and you can approve it again.
+
+**Put the studio on your own domain.** A Cloudflare tunnel serves the studio on a custom
+domain without opening a port. You need the domain's DNS on Cloudflare and
+[`cloudflared`](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+installed.
+
+1. One-time setup: run `cloudflared tunnel login`, then `cloudflared tunnel create cope-studio`.
+2. Add these to `.env`:
+
+   ```bash
+   COPE_STUDIO_USER=you
+   COPE_STUDIO_PASSWORD=a-long-unique-passphrase   # at least 12 characters
+   COPE_PUBLIC_HOST=cope.example.com
+   ```
+
+3. Run `pnpm cope review --tunnel cope-studio`.
+
+This points `cope.example.com` at the tunnel (`cloudflared tunnel route dns`), starts the
+tunnel, and serves the studio at `https://cope.example.com`. If cloudflared exits, the
+studio stops too, so it is never half up.
+
+The login is checked on the server for every request, with HTTP Basic auth over the
+tunnel's HTTPS. The browser shows its own login prompt, and nothing about the password
+reaches the page. After 10 wrong logins, that client is locked out for 15 minutes.
+The studio won't start with `COPE_PUBLIC_HOST` set unless both login variables are
+present, and it accepts requests only for localhost and that one domain. Anyone who logs
+in can spend your model credits and make your machine fetch any URL pasted as a source.
+For extra protection, add a Cloudflare Access policy for the hostname in front of it.
+
+**LinkedIn hooks.** The `linkedin_hooks` format writes five alternative openings, each
+under the 210-character "see more" fold, from different angles: outcome, contrarian,
+number or fact, personal moment, question. In the studio, **Use as opening** replaces
+the LinkedIn post's first paragraph with that hook. Save the post to keep it.
 
 **Check `run-summary.json`.** A format can be `valid: true` after 1–2 repair passes;
 that's normal (COPE catching its own draft going over a limit and fixing it). A failed

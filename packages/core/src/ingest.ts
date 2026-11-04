@@ -25,6 +25,8 @@ export function stripHtml(html: string): string {
   const text = html
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<pre[^>]*>/gi, "\n\n```\n") // keep code blocks fenced for carousel code slides
+    .replace(/<\/pre>/gi, "\n```\n\n")
     .replace(/<(h[1-6])[^>]*>/gi, "\n\n## ")
     .replace(/<\/h[1-6]>/gi, "\n")
     .replace(/<p[^>]*>/gi, "\n\n")

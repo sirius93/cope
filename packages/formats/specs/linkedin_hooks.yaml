@@ -1,0 +1,14 @@
+id: linkedin_hooks
+platform: linkedin
+kind: shortform
+outputSchema: string[]
+limits:
+  maxPostChars: 210 # must land before LinkedIn's "see more" fold
+  minPosts: 5
+  maxPosts: 5
+rules:
+  - Each hook is the opening of a LinkedIn post and must make sense on its own before the "see more" fold.
+  - "Use a different angle for each, in this order: the outcome or result; a contrarian take; a specific number or fact from the brief; a personal moment; a sharp question."
+  - Use only facts, numbers and claims from the brief. Never invent statistics or quotes.
+  - Write in the brief's point of view and the voice guide, if one is given.
+  - No hashtags, no emoji openers, no "I'm excited to share", and no promise the post can't pay off.

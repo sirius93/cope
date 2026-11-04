@@ -215,7 +215,7 @@ cope review out/my-post            # opens local review UI
 cope publish out/my-post --platforms bluesky,x [--dry-run]
 ```
 
-> M1 ships `init`, `brief`, `run`. `review` and `publish` land in M4/M3.
+> M1 ships `init`, `brief`, `run`. `review` shipped early as COPE studio: start runs, edit and re-validate drafts, approve before images are generated. `publish` lands in M3.
 
 **Local server:** `cope serve` exposes the same operations over HTTP (`POST /runs`, `GET /runs/:id`, `POST /runs/:id/publish`) so it can be driven by other agents or a UI.
 

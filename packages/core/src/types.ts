@@ -20,6 +20,7 @@ export interface AdaptResult {
 export interface ImageConcept {
   headline?: string;
   subhead?: string;
+  code?: string; // carousel only: an excerpt of a source code block, checked line by line
   imagePrompt: string;
   negativeCues?: string[];
 }
