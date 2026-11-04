@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COPE Studio</title>
+<style>
+  :root {
+    --bg: #f7f6f3; --panel: #fff; --text: #1d1d1f; --muted: #6b6b70; --border: #e2e0db;
+    --accent: #2f6feb; --ok: #1a7f37; --bad: #c62828; --bad-bg: #fdecec; --ok-bg: #e7f5ea;
+    --wait: #8a5a00; --wait-bg: #fff4d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141416; --panel: #1d1d20; --text: #ececee; --muted: #9a9aa2; --border: #2e2e33;
+      --accent: #6c9cff; --ok: #4cc26a; --bad: #ff6b6b; --bad-bg: #3a1d1f; --ok-bg: #19301f;
+      --wait: #f0c060; --wait-bg: #3a2f14;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, sans-serif; }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  nav { border-right: 1px solid var(--border); padding: 20px 12px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  nav h1 { font-size: 16px; margin: 0 8px 12px; }
+  nav .new { width: 100%; margin-bottom: 12px; }
+  nav #runs button { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--text);
+    padding: 8px; border-radius: 8px; font: inherit; font-size: 14px; cursor: pointer; }
+  nav #runs button:hover { background: var(--panel); }
+  nav #runs button[aria-current="true"] { background: var(--panel); box-shadow: inset 3px 0 var(--accent); }
+  nav small { display: block; color: var(--muted); font-size: 12px; }
+  main { padding: 28px 32px 64px; max-width: 980px; }
+  h2 { font-size: 22px; margin: 0 0 8px; }
+  h3 { font-size: 15px; margin: 0; }
+  .muted { color: var(--muted); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 16px 0; }
+  .card header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .card.pending { border-color: var(--wait); background: var(--wait-bg); }
+  .badge { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--ok-bg); color: var(--ok); }
+  .badge.bad { background: var(--bad-bg); color: var(--bad); }
+  .spacer { flex: 1; }
+  textarea, input[type="text"], select { width: 100%; font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+  select { font-family: inherit; width: auto; padding: 6px 10px; }
+  textarea { min-height: 120px; resize: vertical; }
+  textarea.tall { min-height: 360px; }
+  textarea.short { min-height: 64px; }
+  label.field { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  .count { font-size: 12px; color: var(--muted); text-align: right; margin: 2px 0 8px; }
+  .count.over { color: var(--bad); font-weight: 600; }
+  .post { position: relative; }
+  .post .remove { position: absolute; top: -6px; right: -6px; }
+  .hook-row { display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin: -4px 0 10px; }
+  .hook-row .count { margin: 0; }
+  button.btn { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.btn:disabled { opacity: .5; cursor: default; }
+  button.icon { padding: 0 7px; border-radius: 99px; font-size: 12px; line-height: 20px; }
+  ul.violations { margin: 8px 0 0; padding-left: 18px; color: var(--bad); font-size: 13px; }
+  p.error { color: var(--bad); }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  figure { margin: 0; }
+  figure img { width: 100%; border-radius: 8px; border: 1px solid var(--border); display: block; }
+  figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; white-space: pre-line; }
+  .actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .checks label { display: flex; gap: 6px; align-items: center; font-size: 14px; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  .slide { display: grid; grid-template-columns: 240px 1fr; gap: 16px; padding: 16px 0; border-top: 1px solid var(--border); }
+  .slide:first-of-type { border-top: 0; }
+  .slide .preview img { width: 100%; border-radius: 8px; border: 1px solid var(--border); display: block; background: var(--bg); min-height: 120px; }
+  .slide .preview .error { font-size: 12px; margin: 6px 0 0; }
+  .slide .field:first-child { margin-top: 0; }
+  .slide textarea { min-height: 72px; }
+  .slide textarea.code { min-height: 110px; white-space: pre; overflow-x: auto; }
+  .slide-head { display: flex; align-items: center; gap: 8px; }
+  a { color: var(--accent); }
+  #picker { display: none; }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+    nav { position: static; height: auto; border-right: 0; padding: 16px 16px 0; }
+    nav #runs { display: none; }
+    #picker { display: block; width: 100%; margin-bottom: 16px; }
+    main { padding: 16px; }
+    .slide { grid-template-columns: 1fr; }
+    .slide .preview { max-width: 280px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <h1>COPE studio</h1>
+    <button class="btn primary new" onclick="location.hash = 'new'">+ New post</button>
+    <div id="runs"></div>
+  </nav>
+  <main>
+    <select id="picker" aria-label="Run"></select>
+    <div id="view"><p class="muted">Loading…</p></div>
+  </main>
+</div>
+<script>
+const $ = (tag, props = {}, ...kids) => {
+  const el = Object.assign(document.createElement(tag), props);
+  el.append(...kids.filter((k) => k != null));
+  return el;
+};
+const view = document.getElementById("view");
+const LABELS = { x_post: "X post", x_thread: "X thread", linkedin_post: "LinkedIn post", linkedin_hooks: "LinkedIn hooks",
+  blog_md: "Blog draft", og_image: "OG image", quote_card: "Quote card", carousel: "Carousel" };
+const ORDER = ["linkedin_post", "linkedin_hooks", "x_post", "x_thread", "blog_md"];
+const label = (id) => LABELS[id] ?? id;
+// Mirrors countChars in packages/formats/src/validate.ts; the server re-validates on save.
+const seg = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+const count = (text, platform) =>
+  [...seg.segment(platform === "x" ? text.replace(/https?:\/\/\S+/g, "x".repeat(23)) : text)].length;
+const api = async (path, init) => {
+  const res = await fetch(path, init && { ...init, headers: { "content-type": "application/json" }, body: JSON.stringify(init.body) });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? res.statusText);
+  return data;
+};
+const spinner = (text) => $("p", {}, $("span", { className: "spinner", ariaHidden: "true" }), text);
+let slug;
+let linkedinEditor; // set by the LinkedIn post card so hooks can replace its opening
+let planSavers = []; // each plan editor's save(); "Generate images" saves unsaved edits first
+
+async function waitForJob(id) {
+  for (;;) {
+    const job = await api(`/api/jobs/${id}`);
+    if (job.status !== "running") return job;
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+}
+
+async function route() {
+  const runs = await api("/api/runs");
+  const hash = decodeURIComponent(location.hash.slice(1));
+  slug = hash === "new" || !runs.length ? null : hash || runs[0].slug;
+  document.getElementById("runs").replaceChildren(...runs.map((r) => $("button", {
+    onclick: () => (location.hash = r.slug), ariaCurrent: String(r.slug === slug),
+  }, r.title, $("small", { textContent: new Date(r.mtime).toLocaleString() }))));
+  const picker = document.getElementById("picker");
+  picker.replaceChildren($("option", { value: "new", textContent: "+ New post", selected: !slug }),
+    ...runs.map((r) => $("option", { value: r.slug, textContent: r.title, selected: r.slug === slug })));
+  picker.onchange = () => (location.hash = picker.value);
+  slug ? loadRun() : newPostView();
+}
+
+async function newPostView() {
+  const opts = await api("/api/options");
+  const box = (id, checked) => $("label", {}, $("input", { type: "checkbox", value: id, checked }), label(id));
+  const source = $("textarea", { className: "tall", id: "source", placeholder: "Paste rough notes, a Markdown draft, or a URL…" });
+  const textBoxes = $("div", { className: "checks" }, ...opts.text.map((id) => box(id, true)));
+  const imageBoxes = $("div", { className: "checks" }, ...opts.image.map((id) => box(id, id === "carousel")));
+  const mode = $("select", { id: "mode" }, ...["cards", "generated"].map((m) => $("option", { value: m, textContent: m === "cards" ? "Local cards (fast, no image model)" : "Generated artwork", selected: m === opts.mode })));
+  const style = $("select", { id: "style" }, ...opts.styles.map((s) => $("option", { value: s, textContent: s, selected: s === opts.style })));
+  const status = $("div");
+  const go = $("button", { className: "btn primary", textContent: "Write drafts" });
+  go.onclick = async () => {
+    const formats = [...textBoxes.querySelectorAll("input:checked"), ...imageBoxes.querySelectorAll("input:checked")].map((i) => i.value);
+    go.disabled = true;
+    status.replaceChildren(spinner("Writing the brief and text drafts. This can take a few minutes…"));
+    try {
+      const { job } = await api("/api/runs", { method: "POST", body: { source: source.value, formats, imageMode: mode.value, imageStyle: style.value } });
+      const done = await waitForJob(job);
+      if (done.status === "failed") throw new Error(done.error);
+      location.hash = done.slug;
+    } catch (err) {
+      status.replaceChildren($("p", { className: "error", textContent: err.message }));
+      go.disabled = false;
+    }
+  };
+  view.replaceChildren(
+    $("h2", { textContent: "New post" }),
+    $("p", { className: "muted", textContent: "COPE writes the brief and text drafts first. Images are generated only after you review and approve them." }),
+    $("section", { className: "card" },
+      $("label", { className: "field", htmlFor: "source", textContent: "Source" }), source,
+      $("label", { className: "field", textContent: "Text formats" }), textBoxes,
+      $("label", { className: "field", textContent: "Images (after approval)" }), imageBoxes,
+      $("div", { className: "row" },
+        $("div", {}, $("label", { className: "field", htmlFor: "mode", textContent: "Image mode" }), mode),
+        $("div", {}, $("label", { className: "field", htmlFor: "style", textContent: "Style" }), style)),
+      $("div", { className: "actions" }, go)),
+    status,
+  );
+  source.focus();
+}
+
+async function loadRun() {
+  const run = await api(`/api/runs/${encodeURIComponent(slug)}`);
+  const b = run.brief;
+  linkedinEditor = undefined;
+  planSavers = [];
+  const texts = [...run.texts].sort((a, c) => (ORDER.indexOf(a.formatId) + 1 || 99) - (ORDER.indexOf(c.formatId) + 1 || 99));
+  const p = run.pendingImages;
+  const editing = p?.planned && !run.generating;
+  view.replaceChildren(
+    $("h2", { textContent: b?.coreClaim ?? slug }),
+    b ? $("p", { className: "muted", textContent: `${b.audience} · ${b.tone}` }) : null,
+    p || run.generating ? approvalCard(run) : null,
+    b && p && !p.planned && !run.generating ? briefCard(b) : null,
+    ...(editing ? run.plans.map(planCard) : []),
+    ...run.images.map(imageCard),
+    ...texts.map(textCard),
+  );
+  if (run.generating) setTimeout(() => slug && loadRun(), 3000);
+}
+
+async function runStep(button, status, path, message) {
+  button.disabled = true;
+  status.replaceChildren(spinner(message));
+  try {
+    const { job } = await api(`/api/runs/${encodeURIComponent(slug)}/${path}`, { method: "POST", body: {} });
+    const done = await waitForJob(job);
+    if (done.status === "failed") throw new Error(done.error);
+    loadRun();
+  } catch (err) {
+    status.replaceChildren($("p", { className: "error", textContent: err.message }));
+    button.disabled = false;
+  }
+}
+
+function approvalCard(run) {
+  if (run.generating) return $("section", { className: "card pending" }, spinner("Working on images…"));
+  const p = run.pendingImages;
+  const status = $("div");
+  const what = `${p.formats.map(label).join(", ")} (${p.mode === "cards" ? "local cards" : "generated artwork"}, ${p.style})`;
+  if (!p.planned) {
+    const go = $("button", { className: "btn primary", textContent: "Approve drafts & write slides" });
+    go.onclick = () => runStep(go, status, "approve", "Writing slide copy…");
+    return $("section", { className: "card pending" },
+      $("header", {}, $("h3", { textContent: "Step 1 of 2: approve the drafts" })),
+      $("p", { textContent: `Next: ${what}. COPE writes the slide copy from the brief and shows you a preview of every slide to edit before anything is rendered. Edit the brief's key points first if needed.` }),
+      status, $("div", { className: "actions" }, go));
+  }
+  const go = $("button", { className: "btn primary", textContent: "Generate images" });
+  go.onclick = async () => {
+    for (const save of planSavers) if (!(await save())) return; // stop on an invalid plan
+    runStep(go, status, "render", p.mode === "cards" ? "Rendering slides…" : "Generating artwork. This can take a few minutes…");
+  };
+  return $("section", { className: "card pending" },
+    $("header", {}, $("h3", { textContent: "Step 2 of 2: review the slides" })),
+    $("p", { textContent: `Edit ${what} below; previews update as you type. Images are rendered exactly from each saved plan (images/<format>.plan.json).${p.mode === "generated" ? " Artwork is generated only now, so previews show a placeholder behind the text." : ""}` }),
+    status, $("div", { className: "actions" }, go));
+}
+
+function planCard(plan) {
+  const slides = structuredClone(plan.slides);
+  const isCarousel = plan.formatId === "carousel";
+  const generated = plan.mode === "generated";
+  const list = $("div");
+  const issues = $("ul", { className: "violations" });
+  const save = $("button", { className: "btn primary", textContent: "Saved", disabled: true });
+  let dirty = false;
+  const markDirty = () => { dirty = true; save.disabled = false; save.textContent = "Save slides"; };
+
+  const preview = (i, img, err) => {
+    clearTimeout(img.timer);
+    img.timer = setTimeout(async () => {
+      const res = await fetch(`/api/runs/${encodeURIComponent(slug)}/preview/${plan.formatId}`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ slides, index: i }),
+      });
+      if (!res.ok) { err.textContent = (await res.json()).error; return; }
+      err.textContent = "";
+      URL.revokeObjectURL(img.src);
+      img.src = URL.createObjectURL(await res.blob());
+    }, 350);
+  };
+
+  const field = (slide, key, labelText, opts = {}) => {
+    const id = `${plan.formatId}-${key}-${Math.random().toString(36).slice(2)}`;
+    const input = opts.single ? $("input", { type: "text", id, value: slide[key] ?? "" })
+      : $("textarea", { id, value: slide[key] ?? "", className: opts.className ?? "" });
+    const hint = $("div", { className: "count" });
+    const update = () => {
+      if (opts.hint) {
+        const [text, bad] = opts.hint(input.value);
+        hint.textContent = text; hint.classList.toggle("over", bad);
+      }
+    };
+    input.oninput = () => { slide[key] = input.value; update(); markDirty(); opts.onChange?.(); };
+    update();
+    return [$("label", { className: "field", htmlFor: id, textContent: labelText }), input, opts.hint ? hint : null];
+  };
+
+  const renderList = () => {
+    list.replaceChildren(...slides.map((slide, i) => {
+      const img = $("img", { alt: `Preview of slide ${i + 1}` });
+      const err = $("p", { className: "error" });
+      const refresh = () => preview(i, img, err);
+      const remove = isCarousel ? $("button", { className: "btn icon", textContent: "Remove", title: "Remove slide" }) : null;
+      if (remove) remove.onclick = () => { slides.splice(i, 1); markDirty(); renderList(); };
+      const words = (v) => v.trim().split(/\s+/).filter(Boolean).length;
+      const row = $("div", { className: "slide" },
+        $("div", { className: "preview" }, img, err),
+        $("div", {},
+          $("div", { className: "slide-head" }, $("strong", { textContent: slides.length > 1 ? `Slide ${i + 1}` : "Card" }), $("span", { className: "spacer" }), remove),
+          ...field(slide, "headline", isCarousel ? "Title (5–6 words)" : "Headline", { single: true, onChange: refresh,
+            hint: isCarousel ? (v) => [`${words(v)} words`, words(v) < 5 || words(v) > 6] : null }),
+          ...field(slide, "subhead", isCarousel ? "Description (complete sentence, ≤ 240 characters)" : "Subhead", { onChange: refresh,
+            hint: isCarousel ? (v) => [`${v.length} / 240`, v.length > 240] : null }),
+          ...(isCarousel ? field(slide, "code", "Code (optional; lines must come from the source's code blocks)", { className: "code", onChange: refresh }) : []),
+          ...(generated ? field(slide, "imagePrompt", "Artwork prompt (background only, no text)", {}) : [])));
+      refresh();
+      return row;
+    }));
+  };
+
+  const add = isCarousel ? $("button", { className: "btn", textContent: "+ Add slide" }) : null;
+  if (add) add.onclick = () => { slides.push({ headline: "", subhead: "", imagePrompt: slides.at(-1)?.imagePrompt ?? "" }); markDirty(); renderList(); };
+
+  const doSave = async () => {
+    if (!dirty) return true;
+    save.disabled = true; save.textContent = "Saving…";
+    try {
+      await api(`/api/runs/${encodeURIComponent(slug)}/plan/${plan.formatId}`, { method: "PUT", body: { slides } });
+      dirty = false; save.textContent = "Saved"; issues.replaceChildren();
+      return true;
+    } catch (err) {
+      issues.replaceChildren($("li", { textContent: err.message }));
+      save.disabled = false; save.textContent = "Save slides";
+      issues.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+  };
+  save.onclick = doSave;
+  planSavers.push(doSave);
+  renderList();
+
+  return $("section", { className: "card" },
+    $("header", {}, $("h3", { textContent: label(plan.formatId) }),
+      $("span", { className: "muted", textContent: `${plan.mode === "cards" ? "local cards" : "generated artwork"} · ${plan.style}` })),
+    list, issues,
+    $("div", { className: "actions" }, add, $("span", { className: "spacer" }), save));
+}
+
+function briefCard(b) {
+  const claim = $("textarea", { className: "short", value: b.coreClaim, id: "claim" });
+  const points = $("textarea", { value: b.keyPoints.join("\n"), id: "points" });
+  const save = $("button", { className: "btn primary", textContent: "Save brief", disabled: true });
+  const msg = $("span", { className: "muted" });
+  claim.oninput = points.oninput = () => { save.disabled = false; save.textContent = "Save brief"; };
+  save.onclick = async () => {
+    save.disabled = true;
+    try {
+      await api(`/api/runs/${encodeURIComponent(slug)}/brief`, { method: "PUT", body: { brief: {
+        ...b, coreClaim: claim.value.trim(), keyPoints: points.value.split("\n").map((s) => s.trim()).filter(Boolean),
+      } } });
+      save.textContent = "Saved"; msg.textContent = "";
+    } catch (err) { msg.textContent = err.message; save.disabled = false; }
+  };
+  return $("section", { className: "card" },
+    $("header", {}, $("h3", { textContent: "Brief" })),
+    $("label", { className: "field", htmlFor: "claim", textContent: "Core claim" }), claim,
+    $("label", { className: "field", htmlFor: "points", textContent: "Key points (one per line, one carousel slide each)" }), points,
+    $("div", { className: "actions" }, msg, save));
+}
+
+function statusBadge(valid, violations) {
+  return $("span", { className: valid ? "badge" : "badge bad", textContent: valid ? "valid" : `${violations.length} issue(s)` });
+}
+
+function textCard(t) {
+  const isList = Array.isArray(t.content);
+  const isHooks = t.formatId === "linkedin_hooks";
+  const max = isList ? t.limits.maxPostChars : t.limits.maxChars;
+  let badge = statusBadge(t.valid, t.violations);
+  const issues = $("ul", { className: "violations" }, ...t.violations.map((v) => $("li", { textContent: v })));
+  const save = $("button", { className: "btn primary", textContent: "Save", disabled: true });
+  const editors = $("div");
+  const dirty = () => { save.disabled = false; save.textContent = "Save"; };
+
+  const editor = (value) => {
+    const area = $("textarea", { value, className: t.formatId === "blog_md" ? "tall" : isHooks ? "short" : "" });
+    const counter = $("div", { className: "count" });
+    const update = () => {
+      const n = count(area.value, t.platform);
+      counter.textContent = max ? `${n} / ${max}` : `${n} chars`;
+      counter.classList.toggle("over", max != null && n > max);
+    };
+    area.oninput = () => { update(); dirty(); };
+    update();
+    if (isHooks) {
+      const use = $("button", { className: "btn", textContent: "Use as opening" });
+      use.onclick = () => {
+        if (!linkedinEditor) return alert("This run has no LinkedIn post to open.");
+        linkedinEditor.setOpening(area.value.trim());
+        use.textContent = "Used ✓"; setTimeout(() => (use.textContent = "Use as opening"), 1500);
+      };
+      return $("div", {}, area, $("div", { className: "hook-row" }, counter, use));
+    }
+    if (!isList) {
+      if (t.formatId === "linkedin_post") {
+        // Hooks replace the first paragraph, i.e. what shows above LinkedIn's "see more" fold.
+        linkedinEditor = { setOpening: (hook) => {
+          const rest = area.value.split(/\n\s*\n/).slice(1).join("\n\n");
+          area.value = rest ? `${hook}\n\n${rest}` : hook;
+          area.oninput();
+          area.scrollIntoView({ behavior: "smooth", block: "center" });
+        } };
+      }
+      return $("div", {}, area, counter);
+    }
+    const remove = $("button", { className: "btn icon remove", textContent: "✕", title: "Remove post", ariaLabel: "Remove post" });
+    const wrap = $("div", { className: "post" }, area, remove, counter);
+    remove.onclick = () => { wrap.remove(); dirty(); };
+    return wrap;
+  };
+  const values = () => [...editors.querySelectorAll("textarea")].map((a) => a.value);
+
+  editors.append(...(isList ? t.content : [t.content]).map(editor));
+  const extra = isList && !isHooks
+    ? $("button", { className: "btn", textContent: "+ Add post", onclick: () => { editors.append(editor("")); dirty(); } })
+    : null;
+  const copy = isHooks ? null : $("button", { className: "btn", textContent: "Copy" });
+  if (copy) copy.onclick = async () => {
+    await navigator.clipboard.writeText(values().join("\n\n"));
+    copy.textContent = "Copied"; setTimeout(() => (copy.textContent = "Copy"), 1200);
+  };
+  save.onclick = async () => {
+    save.disabled = true; save.textContent = "Saving…";
+    try {
+      const result = await api(`/api/runs/${encodeURIComponent(slug)}/text/${t.formatId}`, {
+        method: "PUT", body: { content: isList ? values() : values()[0] },
+      });
+      const next = statusBadge(result.valid, result.violations);
+      badge.replaceWith(next); badge = next;
+      issues.replaceChildren(...result.violations.map((v) => $("li", { textContent: v })));
+      save.textContent = "Saved";
+    } catch (err) {
+      save.disabled = false; save.textContent = "Save"; alert(err.message);
+    }
+  };
+
+  return $("section", { className: "card" },
+    $("header", {}, $("h3", { textContent: label(t.formatId) }), badge,
+      isHooks ? $("span", { className: "muted", textContent: "Pick one to open the LinkedIn post above" }) : null),
+    editors, issues,
+    $("div", { className: "actions" }, extra, $("span", { className: "spacer" }), copy, save));
+}
+
+function imageCard(img) {
+  const file = (p) => `/files/${encodeURIComponent(slug)}/${p}`;
+  return $("section", { className: "card" },
+    $("header", {}, $("h3", { textContent: label(img.formatId) }),
+      img.error ? $("span", { className: "badge bad", textContent: "failed" }) : null,
+      $("span", { className: "spacer" }),
+      img.pdf ? $("a", { href: file(img.pdf), target: "_blank", textContent: "Open PDF" }) : null),
+    img.error ? $("p", { className: "error", textContent: img.error }) : null,
+    $("div", { className: "gallery" }, ...img.images.map((i) => $("figure", {},
+      $("a", { href: file(i.src), target: "_blank" }, $("img", { src: file(i.src), alt: i.altText, loading: "lazy" })),
+      $("figcaption", { textContent: i.altText })))));
+}
+
+addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>

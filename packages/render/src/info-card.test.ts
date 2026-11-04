@@ -43,3 +43,16 @@ test("generated-image caption panels preserve complete descriptions without elli
   for (const word of description.split(/\s+/)) assert.ok(svg.includes(word));
   assert.ok(!svg.includes("…"));
 });
+
+test("code panels keep indentation, escape markup, and fit the largest allowed snippet", () => {
+  const code = ["if (a < b) {", "    return \"x\";", "}"].join("\n");
+  const svg = buildInfoCardSvg({ headline: "Guard Clauses Keep Code Flat", body: "One check.", code, width: 1080, height: 1350, index: 2, total: 5 });
+  const indented = svg.match(/<tspan x="([\d.]+)"[^>]*>return\u00a0&quot;x&quot;;/);
+  const flush = svg.match(/<tspan x="([\d.]+)"[^>]*>if\u00a0\(a\u00a0&lt;\u00a0b\)\u00a0\{/);
+  assert.ok(indented && flush && Number(indented[1]) > Number(flush[1]), "indented line is offset right, markup escaped");
+  const worst = Array.from({ length: 12 }, (_, i) => `${String(i).padStart(2, "0")}${"x".repeat(58)}`).join("\n");
+  for (const style of Object.keys(IMAGE_STYLES)) {
+    buildInfoCardSvg({ headline: "Six Words Of Complete Headline Text", body: "word ".repeat(48).trim() + ".", code: worst, width: 1080, height: 1350, index: 1, total: 9, style: parseImageStyle(style) });
+  }
+  assert.throws(() => buildInfoCardSvg({ headline: "A", body: "B", code: "x".repeat(200), width: 1080, height: 1350, index: 1, total: 1 }), /too wide/);
+});

@@ -8,7 +8,7 @@ import type { ImageProvider, TextProvider } from "@cope/providers";
 import { IMAGE_STYLES, parseImageStyle } from "@cope/render";
 import { PDFDocument } from "pdf-lib";
 import sharp from "sharp";
-import { adaptImageFormat } from "./image-pipeline.js";
+import { adaptImageFormat, extractCodeBlocks, planImageFormat, previewSlide, renderImagePlan } from "./image-pipeline.js";
 import type { Brief, ImageConcept } from "./types.js";
 
 // A real, sharp-decodable PNG fixture — renderTextOverlay reads generated images through
@@ -208,4 +208,48 @@ test("every preset reaches both generated-image stages and is recorded in metada
       assert.equal((await sharp(result.images[0].file).metadata()).width, 1080);
     }
   } finally { rmSync(outDir, { recursive: true, force: true }); }
+});
+
+test("carousel code slides copy source code verbatim and render as cards in any mode", async () => {
+  const source = "Intro\n\n```ts\nfunction add(a: number, b: number) {\n\treturn a + b;\n}\n```\n\nMore\n~~~\nls -la\n~~~\n";
+  assert.deepEqual(extractCodeBlocks(source), ["function add(a: number, b: number) {\n  return a + b;\n}", "ls -la"]);
+  const outDir = mkdtempSync(join(tmpdir(), "cope-code-test-"));
+  try {
+    const [first, ...rest] = makeConcepts(3);
+    const withCode = { ...first, code: "function add(a: number, b: number) {\n    return a + b;\n}" };
+    const result = await adaptImageFormat(brief, loadImageFormat("carousel"), stubConceptProvider([withCode, ...rest]),
+      stubImageProvider(), stubImageProvider(), outDir, { mode: "generated", maxRepairPasses: 0, source });
+    assert.match(result.images[0].altText, /Code:\nfunction add/);
+    assert.equal(result.images[1].altText, "stub alt text");
+    assert.deepEqual((await sharp(result.images[0].file).metadata()).width, 1080);
+
+    const invented = { ...first, code: "function add(a: number, b: number) {\n  return a - b;\n}" };
+    await assert.rejects(adaptImageFormat(brief, loadImageFormat("carousel"), stubConceptProvider([invented, ...rest]),
+      undefined, undefined, outDir, { mode: "cards", maxRepairPasses: 0, source }), /copied exactly.*return a - b/);
+    await assert.rejects(adaptImageFormat(brief, loadImageFormat("carousel"), stubConceptProvider([withCode, ...rest]),
+      undefined, undefined, outDir, { mode: "cards", maxRepairPasses: 0, source: "no code here" }), /copied exactly/);
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
+});
+
+test("generated-mode plans preview locally and render exactly what was edited", async () => {
+  const outDir = mkdtempSync(join(tmpdir(), "cope-plan-test-"));
+  try {
+    const def = loadImageFormat("carousel");
+    const plan = await planImageFormat(brief, def, stubConceptProvider(makeConcepts(3)), { mode: "generated", maxRepairPasses: 0 });
+    for (const i of [0, 1]) assert.equal((await sharp(await previewSlide(def, plan, i)).metadata()).width, 540);
+    plan.slides[1].headline = "A Headline The Person Rewrote";
+    plan.slides[2].imagePrompt = "";
+    await assert.rejects(renderImagePlan(def, plan, stubImageProvider(), stubImageProvider(), outDir, {}), /imagePrompt/);
+    plan.slides[2].imagePrompt = "edited background";
+    const prompts: string[] = [];
+    const recording: ImageProvider = { ...stubImageProvider(), async generate(req) { prompts.push(req.prompt); return stubImageProvider().generate(req); } };
+    const result = await renderImagePlan(def, plan, recording, stubImageProvider(), outDir, {});
+    assert.equal(result.images[1].concept.headline, "A Headline The Person Rewrote");
+    assert.ok(prompts[2].startsWith("edited background"));
+    assert.equal(JSON.parse(readFileSync(join(outDir, "carousel.plan.json"), "utf-8")).slides[1].headline, "A Headline The Person Rewrote");
+  } finally {
+    rmSync(outDir, { recursive: true, force: true });
+  }
 });

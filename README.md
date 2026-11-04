@@ -21,6 +21,9 @@ pnpm cope run examples/post.md --all
 One command produces a reviewable folder of text, images, metadata, and a run summary.
 COPE never publishes automatically.
 
+Prefer a browser? `pnpm cope review` opens COPE studio. Paste your source there, review
+and edit the drafts, then approve to generate the images.
+
 ## Why COPE?
 
 - **One source, many formats.** Create an X post, thread, LinkedIn post, blog draft, OG
@@ -50,6 +53,7 @@ itself.
 | X post | `x_post` | Concise single post |
 | X thread | `x_thread` | Structured multi-post thread |
 | LinkedIn post | `linkedin_post` | Professional long-form social post |
+| LinkedIn hooks | `linkedin_hooks` | Five alternative openings that fit above the "see more" fold |
 | Blog draft | `blog_md` | Markdown article |
 | OG image | `og_image` | Share-ready PNG |
 | Quote card | `quote_card` | Branded quote PNG |

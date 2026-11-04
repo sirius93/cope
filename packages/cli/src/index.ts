@@ -3,6 +3,7 @@ import { IMAGE_STYLES } from "@cope/core";
 import { parseArgs } from "node:util";
 import { runBriefCommand } from "./commands/brief.js";
 import { runInit } from "./commands/init.js";
+import { runReviewCommand } from "./commands/review.js";
 import { runRunCommand } from "./commands/run.js";
 import { runVoiceCommand } from "./commands/voice.js";
 
@@ -16,6 +17,8 @@ const HELP = [
   "  cope run <input> -f a,b,c    adapt to the given format ids",
   "  cope run <input> --all       adapt to every known format",
   "  cope voice <src>... [--force]  learn voice.md from URLs, RSS feed URLs, or files",
+  "  cope review [--port 4321]    COPE studio: start, review and approve runs in your browser",
+  "  cope review --tunnel <name>  also serve it on COPE_PUBLIC_HOST via a Cloudflare tunnel",
   "  --image-mode cards|generated  local info cards (default) or AI artwork",
   "  --image-style <name>          editorial (default), minimal, blueprint, sketch",
 ].join("\n");
@@ -65,6 +68,11 @@ async function main() {
         options: { force: { type: "boolean" } },
       });
       await runVoiceCommand(positionals, { force: values.force });
+      return;
+    }
+    case "review": {
+      const { values } = parseArgs({ args: rest, options: { port: { type: "string" }, tunnel: { type: "string" } } });
+      runReviewCommand({ port: values.port ? Number(values.port) : undefined, tunnel: values.tunnel });
       return;
     }
     default: {
